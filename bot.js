@@ -21,7 +21,7 @@ bot.start((ctx) => {
         inline_keyboard: [
           [{
             text: '🛍️ Открыть магазин',
-            web_app: { url: 'https://adeviceminishopdemo2.vercel.app' }
+            web_app: { url: 'https://adeviceminishopdemo.vercel.app' }
           }]
         ]
       }
