@@ -1,7 +1,7 @@
 const { Telegraf } = require('telegraf');
 
 // === Замените на ваш токен из BotFather ===
-const BOT_TOKEN = '7922462328:AAF7r_PDolKxEKt1A1aGJ8pnTCHUO9qkwA0';
+const BOT_TOKEN = '8022144232:AAGCdMHr-0abUqhqjHGv5SBcSdiPzyWZz2I';
 
 // === Замените на ваш Telegram ID ===
 const ADMIN_CHAT_ID = '1438809874';
