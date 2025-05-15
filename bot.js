@@ -4,7 +4,11 @@ const { Telegraf } = require('telegraf');
 const BOT_TOKEN = '7922462328:AAF7r_PDolKxEKt1A1aGJ8pnTCHUO9qkwA0';
 
 // === Замените на ваш Telegram ID ===
-const ADMIN_CHAT_ID = '1438809874'; // ← ваш chat_id
+const ADMIN_CHAT_ID = '1438809874';
+
+if (!BOT_TOKEN) {
+  throw new Error('BOT_TOKEN не задан в .env');
+}
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -17,7 +21,7 @@ bot.start((ctx) => {
         inline_keyboard: [
           [{
             text: '🛍️ Открыть магазин',
-            web_app: { url: 'https://a-device-minishop.vercel.app ' }
+            web_app: { url: 'https://adeviceminishopdemo2.vercel.app' }
           }]
         ]
       }
@@ -25,7 +29,6 @@ bot.start((ctx) => {
   );
 });
 
-// Обработка заказов из Mini App
 bot.on('text', (ctx) => {
   const message = ctx.message.text;
   const from = ctx.message.from;
@@ -37,7 +40,6 @@ bot.on('text', (ctx) => {
   }
 });
 
-// Запуск бота
 bot.launch();
 
 console.log('✅ Бот запущен');
