@@ -1,45 +1,30 @@
-const { Telegraf } = require('telegraf');
+const TelegramBot = require('node-telegram-bot-api');
+require('dotenv').config();
 
-// === Замените на ваш токен из BotFather ===
-const BOT_TOKEN = '8022144232:AAGCdMHr-0abUqhqjHGv5SBcSdiPzyWZz2I';
+// Токен из BotFather
+const token = process.env.TELEGRAM_BOT_TOKEN;
+const bot = new TelegramBot(token, { polling: true });
 
-// === Замените на ваш Telegram ID ===
-const ADMIN_CHAT_ID = '1438809874';
+console.log("Бот запущен...");
 
-if (!BOT_TOKEN) {
-  throw new Error('BOT_TOKEN не задан в .env');
-}
+// Команда /start
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  const message = `
+🚀 Добро пожаловать!
 
-const bot = new Telegraf(BOT_TOKEN);
+🛒 Здесь вы можете купить оригинальную технику Apple и аксессуары.
 
-bot.start((ctx) => {
-  ctx.replyWithHTML(
-    '👋 Добро пожаловать в <b>A-Device</b>!\n\n' +
-    'Выберите товары в магазине и нажмите "Связаться", чтобы оформить заказ.',
-    {
-      reply_markup: {
-        inline_keyboard: [
-          [{
-            text: '🛍️ Открыть магазин',
-            web_app: { url: 'https://adeviceminishopdemo.vercel.app' }
-          }]
-        ]
-      }
+👉 Нажмите кнопку ниже, чтобы открыть магазин:
+  `;
+
+  const keyboard = {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '📱 Открыть магазин', web_app: { url: 'https://a-device.vercel.app ' } }]
+      ]
     }
-  );
+  };
+
+  bot.sendMessage(chatId, message, keyboard);
 });
-
-bot.on('text', (ctx) => {
-  const message = ctx.message.text;
-  const from = ctx.message.from;
-
-  if (message.startsWith('Здравствуйте!')) {
-    const fullMessage = `📦 Новый заказ от ${from.first_name} (@${from.username || 'no_username'})\n\n${message}`;
-    bot.telegram.sendMessage(ADMIN_CHAT_ID, fullMessage);
-    ctx.reply('✅ Спасибо! Мы свяжемся с вами в ближайшее время.');
-  }
-});
-
-bot.launch();
-
-console.log('✅ Бот запущен');
