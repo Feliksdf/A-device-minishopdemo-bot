@@ -16,10 +16,9 @@ const initializeBot = () => {
     return botInstance;
   }
 
+  // Используем WebHook вместо Polling
   botInstance = new TelegramBot(token, {
-    webHook: true,
-    key: null, // Опционально: путь к приватному ключу
-    cert: null // Опционально: путь к сертификату
+    webHook: true
   });
 
   const webhookUrl = process.env.BOT_WEBHOOK_URL || `https://ваш-проект.onrender.com/telegram`;
@@ -51,11 +50,23 @@ const initializeBot = () => {
     ).catch(err => {
       console.error('❌ Ошибка отправки сообщения:', err.message);
     });
+  });
+
+  // Обработка ошибок бота
+  botInstance.on('polling_error', (error) => {
+    console.error('❌ Polling error:', error.message);
+  });
+
+  botInstance.on('webhook_error', (error) => {
+    console.error('❌ Webhook error:', error.message);
+  });
+
+  return botInstance;
 };
 
 // Инициализация сервера
 const app = express();
-const PORT = process.env.PORT; // Render предоставляет порт напрямую
+const PORT = process.env.PORT;
 
 // Обработка WebApp
 app.use(express.static(__dirname + '/public'));
@@ -63,7 +74,7 @@ app.get('/shop', (req, res) => {
   res.sendFile(__dirname + '/public/shop.html');
 });
 
-// Обработка Webhook
+// Обработка WebHook
 app.use(express.json());
 app.post('/telegram', (req, res) => {
   if (botInstance) {
