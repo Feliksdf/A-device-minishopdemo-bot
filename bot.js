@@ -3,7 +3,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Проверка окружения
-const REQUIRED_ENV = ['TELEGRAM_TOKEN', 'WEB_APP_URL'];
+const REQUIRED_ENV = ['TELEGRAM_BOT_TOKEN', 'WEB_APP_URL'];
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
 if (missingEnv.length) {
   console.error('❌ Отсутствуют переменные:', missingEnv.join(', '));
@@ -107,8 +107,8 @@ bot.onText(/\/start/, (msg) => {
 require('dotenv').config();
 
 // Проверка переменных окружения
-if (!process.env.TELEGRAM_TOKEN || !process.env.WEB_APP_URL) {
-  console.error('❌ Проверьте .env файл! Требуются TELEGRAM_TOKEN и WEB_APP_URL');
+if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.WEB_APP_URL) {
+  console.error('❌ Проверьте .env файл! Требуются TELEGRAM_BOT_TOKEN и WEB_APP_URL');
   process.exit(1);
 }
 // Телеметрия для Glitch
