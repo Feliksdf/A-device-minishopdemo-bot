@@ -1,9 +1,20 @@
 const TelegramBot = require('node-telegram-bot-api');
-const express = require('express');
-require('dotenv').config();
 
-const app = express();
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { webHook: true });
+// Проверка наличия токена
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  throw new Error('❌ TELEGRAM_BOT_TOKEN не указан в .env');
+}
+
+// Инициализация бота
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
+  polling: {
+    interval: 1000, // Интервал между запросами (мс)
+    autoStart: true,
+    params: {
+      timeout: 10, // Время ожидания обновлений (секунды)
+    },
+  },
+});
 
 // Обработчик команды /start
 bot.onText(/\/start/, (msg) => {
@@ -21,23 +32,29 @@ bot.onText(/\/start/, (msg) => {
 
   bot.sendMessage(chatId, 'Добро пожаловать в A-Device! 🛍️\n\n' +
     'Нажмите кнопку ниже, чтобы открыть наш веб-магазин:', options)
-    .catch(err => console.error('❌ Ошибка отправки:', err.message));
+    .catch(err => console.error('❌ Ошибка отправки сообщения:', err.message));
 });
 
-// WebHook endpoint
-app.post('/telegram', (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
+// Обработка ошибок
+bot.on('polling_error', (error) => {
+  console.error('❌ Polling error:', error.message);
 });
 
-// Установка WebHook
-const webhookUrl = process.env.BOT_WEBHOOK_URL || 'https://your-project.onrender.com/telegram ';
-bot.setWebHook(webhookUrl).catch(err => {
-  console.error('❌ Ошибка Webhook:', err.message);
+bot.on('error', (error) => {
+  console.error('❌ Общая ошибка бота:', error.message);
 });
 
-// Сервер
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Сервер запущен на порту ${PORT}`);
+// Корректное завершение работы
+process.on('SIGINT', () => {
+  console.log('⚠️ Получен SIGINT — остановка бота');
+  bot.stopPolling();
+  process.exit(0);
 });
+
+process.on('SIGTERM', () => {
+  console.log('⚠️ Получен SIGTERM — остановка бота');
+  bot.stopPolling();
+  process.exit(0);
+});
+
+console.log('✅ Бот запущен в режиме Polling');
