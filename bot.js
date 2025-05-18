@@ -1,6 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
-const path = require('path');
 require('dotenv').config();
 
 // Инициализация бота с защитой от дублирования
@@ -17,11 +16,15 @@ const initializeBot = () => {
     return botInstance;
   }
 
-  // Используем Webhook вместо Polling
-  botInstance = new TelegramBot(token, { webHook: true });
+  botInstance = new TelegramBot(token, {
+    webHook: true,
+    key: null, // Опционально: путь к приватному ключу
+    cert: null // Опционально: путь к сертификату
+  });
+
   const webhookUrl = process.env.BOT_WEBHOOK_URL || `https://ваш-проект.onrender.com/telegram`;
 
-  // Установка Webhook
+  // Установка WebHook
   botInstance.setWebHook(webhookUrl).catch(err => {
     console.error('❌ Ошибка Webhook:', err.message);
   });
@@ -34,7 +37,9 @@ const initializeBot = () => {
       reply_markup: {
         inline_keyboard: [[{
           text: '🛍️ Открыть магазин',
-          web_app: { url: process.env.WEB_APP_URL || 'https://adeviceminishopdemo.vercel.app ' }
+          web_app: { 
+            url: process.env.WEB_APP_URL || 'https://adeviceminishopdemo.vercel.app '
+          }
         }]]
       }
     };
@@ -46,28 +51,16 @@ const initializeBot = () => {
     ).catch(err => {
       console.error('❌ Ошибка отправки сообщения:', err.message);
     });
-  });
-
-  // Обработка ошибок бота
-  botInstance.on('polling_error', (error) => {
-    console.error('❌ Polling error:', error.message);
-  });
-
-  botInstance.on('webhook_error', (error) => {
-    console.error('❌ Webhook error:', error.message);
-  });
-
-  return botInstance;
 };
 
 // Инициализация сервера
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT; // Render предоставляет порт напрямую
 
 // Обработка WebApp
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname + '/public'));
 app.get('/shop', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'shop.html'));
+  res.sendFile(__dirname + '/public/shop.html');
 });
 
 // Обработка Webhook
@@ -83,7 +76,6 @@ app.post('/telegram', (req, res) => {
 process.on('SIGTERM', () => {
   console.log('⚠️ Получен SIGTERM — остановка бота');
   if (botInstance) botInstance.stopWebHook();
-  // Render сам перезапустит сервис
 });
 
 process.on('SIGINT', () => {
