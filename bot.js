@@ -20,8 +20,7 @@ const initializeBot = () => {
     polling: {
       params: {
         timeout: 10,
-        interval: 2000,
-        autoStart: false
+        interval: 2000
       }
     },
     autoCancel: true
@@ -67,8 +66,13 @@ const initializeBot = () => {
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Обработка Webhook
+// Обработка WebApp
 app.use(express.json());
+app.get('/shop', (req, res) => {
+  res.sendFile(__dirname + '/public/shop.html');
+});
+
+// Обработка Webhook
 app.post('/telegram', (req, res) => {
   if (botInstance) {
     botInstance.processUpdate(req.body);
@@ -76,21 +80,20 @@ app.post('/telegram', (req, res) => {
   res.sendStatus(200);
 });
 
-// Роут для WebApp
-app.get('/shop', (req, res) => {
-  res.sendFile(__dirname + '/public/shop.html');
-});
-
 // Обработчики сигналов остановки
 process.on('SIGTERM', () => {
   console.log('⚠️ Получен SIGTERM — остановка бота');
-  if (botInstance) botInstance.stopPolling();
-  process.exit(0);
+  if (botInstance) {
+    botInstance.stopPolling();
+  }
+  // Не вызывайте process.exit() — Render сам перезапустит сервис
 });
 
 process.on('SIGINT', () => {
   console.log('⚠️ Получен SIGINT — остановка бота');
-  if (botInstance) botInstance.stopPolling();
+  if (botInstance) {
+    botInstance.stopPolling();
+  }
   process.exit(0);
 });
 
