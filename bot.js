@@ -20,7 +20,7 @@ const initializeBot = () => {
   botInstance = new TelegramBot(token, { webHook: true });
   isBotActive = true;
 
-  const webhookUrl = process.env.BOT_WEBHOOK_URL || `https://your-project.onrender.com/telegram `;
+  const webhookUrl = process.env.BOT_WEBHOOK_URL || `https://a-device-minishopdemo-bot.onrender.com `;
 
   botInstance.setWebHook(webhookUrl).catch(err => {
     console.error('❌ Ошибка Webhook:', err.message);
