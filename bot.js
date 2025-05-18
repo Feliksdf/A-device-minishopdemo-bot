@@ -1,17 +1,19 @@
 const TelegramBot = require('node-telegram-bot-api');
+const express = require('express'); // Для HTTP-сервера
+require('dotenv').config();
 
-// Проверка наличия токена
+// Проверка токена
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('❌ TELEGRAM_BOT_TOKEN не указан в .env');
 }
 
 // Инициализация бота
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
+let bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
   polling: {
-    interval: 1000, // Интервал между запросами (мс)
+    interval: 1000,
     autoStart: true,
     params: {
-      timeout: 10, // Время ожидания обновлений (секунды)
+      timeout: 10,
     },
   },
 });
@@ -35,26 +37,51 @@ bot.onText(/\/start/, (msg) => {
     .catch(err => console.error('❌ Ошибка отправки сообщения:', err.message));
 });
 
-// Обработка ошибок
+// HTTP-сервер для поддержания активности
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Маршрут для проверки статуса сервера
+app.get('/health', (req, res) => {
+  res.status(200).send('OK'); // Ответ на запрос UptimeRobot
+});
+
+// Запуск сервера
+app.listen(PORT, () => {
+  console.log(`🚀 HTTP-сервер запущен на порту ${PORT}`);
+});
+
+// Обработчики ошибок
 bot.on('polling_error', (error) => {
   console.error('❌ Polling error:', error.message);
+  restartBot();
 });
 
-bot.on('error', (error) => {
-  console.error('❌ Общая ошибка бота:', error.message);
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err.message);
+  restartBot();
 });
 
-// Корректное завершение работы
-process.on('SIGINT', () => {
-  console.log('⚠️ Получен SIGINT — остановка бота');
-  bot.stopPolling();
-  process.exit(0);
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection:', reason.message);
+  restartBot();
 });
 
-process.on('SIGTERM', () => {
-  console.log('⚠️ Получен SIGTERM — остановка бота');
-  bot.stopPolling();
-  process.exit(0);
-});
+// Функция перезапуска бота
+function restartBot() {
+  console.log('🔄 Перезапуск бота через 5 секунд...');
+  bot.stopPolling(); // Останавливаем текущий polling
 
-console.log('✅ Бот запущен в режиме Polling');
+  setTimeout(() => {
+    bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
+      polling: {
+        interval: 1000,
+        autoStart: true,
+        params: {
+          timeout: 10,
+        },
+      },
+    });
+    console.log('✅ Бот перезапущен');
+  }, 5000);
+}
