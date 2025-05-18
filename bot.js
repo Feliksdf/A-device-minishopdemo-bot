@@ -78,10 +78,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 // ... предыдущий код (инициализация бота и express)
 
-// Веб-интерфейс магазина
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/shop.html'));
-});
 // Обработчик команды /start
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
