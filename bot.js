@@ -16,12 +16,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Инициализация бота
-const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
+const bot = new TelegramBot(token, {
   polling: {
-    interval: 300,
-    timeout: 10,
-    autoStart: true
-  }
+    params: {
+      timeout: 10 // Используется вместо устаревшего polling.timeout
+    }
+  },
+  autoCancel: true // Ручное управление отменой промисов
 });
 // Обработчик deep-ссылки
 bot.onText(/\/start app=(\w+)/, async (msg, match) => {
